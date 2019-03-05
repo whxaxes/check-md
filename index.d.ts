@@ -1,7 +1,7 @@
 export interface CheckOption {
   cwd: string;
   fix?: boolean;
-  exitLevel?: any;
+  exitLevel?: "none" | "info" | "warn" | "error";
   root?: string[];
   defaultIndex?: string[];
   preset?: string;
@@ -19,7 +19,7 @@ export interface ReportListItem {
 export interface ReportResult {
   msg: string;
   list: ReportListItem[];
-  type: any;
+  type: "none" | "info" | "warn" | "error";
 }
 export interface T100 {
   warning: ReportResult;
