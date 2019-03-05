@@ -12,6 +12,12 @@ const matchAnchorRE = new RegExp(`(?:\\r?\\n|${matchAnchorStr})`);
 // eslint-disable-next-line no-control-regex
 const rControl = /[\u0000-\u001f]/g;
 const rSpecial = /[\s~`!@#$%^&*()\-_+=[\]{}|\\;:"'<>,.?/]+/g;
+const LOG_LEVELS = {
+  none: 0,
+  info: 1,
+  warn: 2,
+  error: 3,
+};
 
 /** @type {Map<String, CacheObj>} */
 const contentCache = new Map();
@@ -25,7 +31,9 @@ const presetConfig = {
     defaultIndex: [ 'README.md', 'readme.md' ],
     root: [ './' ],
     pattern: '**/*.md',
+    ignore: [ '**/node_modules' ],
     cwd: process.cwd(),
+    exitLevel: 'error',
   },
 };
 
@@ -41,10 +49,12 @@ const presetConfig = {
  * @typedef {Object} CheckOption
  * @property {String} CheckOption.cwd
  * @property {Boolean} [CheckOption.fix]
+ * @property {keyof LOG_LEVELS} [CheckOption.exitLevel]
  * @property {Array<String>} [CheckOption.root]
  * @property {Array<String>} [CheckOption.defaultIndex]
  * @property {String} [CheckOption.preset]
- * @property {String} [CheckOption.pattern]
+ * @property {String | Array<String>} [CheckOption.pattern]
+ * @property {String | Array<String>} [CheckOption.ignore]
  */
 
 /**
@@ -61,8 +71,7 @@ const presetConfig = {
  * @typedef {Object} ReportResult
  * @property {String} ReportResult.msg
  * @property {Array<ReportListItem>} ReportResult.list
- * @property {'error' | 'info' | 'log' | 'warn'} ReportResult.type
- * @property {Boolean} ReportResult.exit
+ * @property {keyof LOG_LEVELS} ReportResult.type
  */
 
 /**
@@ -85,8 +94,8 @@ function hasHeading(fileUrl, heading) {
 }
 
 // slugify
-function slugify(str) {
-  return diacritics.remove(str)
+function slugify(str, lower = true) {
+  str = diacritics.remove(str)
     // Remove control characters
     .replace(rControl, '')
     // Replace special characters
@@ -96,9 +105,13 @@ function slugify(str) {
     // Remove prefixing and trailing separtors
     .replace(/^\-+|\-+$/g, '')
     // ensure it doesn't start with a number (#121)
-    .replace(/^(\d)/, '_$1')
-    // lowercase
-    .toLowerCase();
+    .replace(/^(\d)/, '_$1');
+
+  if (lower) {
+    return str.toLowerCase();// lowercase
+  }
+
+  return str;
 }
 
 /**
@@ -147,15 +160,13 @@ function flushSetContent() {
 /**
  * @param {Object} options
  * @param {ReportResult['type']} options.type
- * @param {ReportResult['exit']} [options.exit]
  * @param {(p: ReportResult) => ReportResult['msg']} options.msgFn
  * @returns {ReportResult}
  */
-function createReportResult({ type, exit, msgFn }) {
+function createReportResult({ type, msgFn }) {
   return {
     type,
     list: [],
-    exit,
     get msg() { return msgFn(this); },
   };
 }
@@ -180,20 +191,35 @@ function getFileStat(fileUrl) {
 }
 
 /**
- * check markdown
+ * init option
  * @param {CheckOption} options
  */
-async function check(options) {
+function initOption(options) {
+  if (options.__init__) return options;
+
   if (options.preset && presetConfig[options.preset]) {
     options = Object.assign({}, presetConfig.default, presetConfig[options.preset], options);
   } else {
     options = Object.assign({}, presetConfig.default, options);
   }
 
-  const { cwd, defaultIndex, root, fix, pattern } = options;
-  assert(Array.isArray(root), 'options.root must be array');
+  options.__init__ = true;
+  return options;
+}
 
-  const files = await glob(pattern, { cwd });
+/**
+ * check markdown
+ * @param {CheckOption} options
+ */
+async function check(options) {
+  options = initOption(options);
+  const { cwd, defaultIndex, root, fix, pattern, ignore } = options;
+  assert(Array.isArray(root), 'options.root must be array');
+  const globPattern = (Array.isArray(pattern) ? pattern : [ pattern ]).concat(
+    (Array.isArray(ignore) ? ignore : [ ignore ]).map(p => `!${p}`)
+  );
+
+  const files = await glob(globPattern, { cwd });
   const result = {
     warning: createReportResult({
       msgFn(r) { return `${r.list.length} warning was found`; },
@@ -202,7 +228,6 @@ async function check(options) {
     deadlink: createReportResult({
       msgFn(r) { return `${r.list.length} dead links was found`; },
       type: 'error',
-      exit: true,
     }),
   };
 
@@ -290,9 +315,25 @@ async function check(options) {
           if (!matchAbUrl || !fileExist(matchAbUrl)) {
             // file is not found
             result.deadlink.list.push({ ...baseReportObj, errMsg: 'File is not found' });
-          } else if (urlObj.hash && !hasHeading(matchAbUrl, decodeURIComponent(urlObj.hash.substring(1)))) {
-            // hash is not found
-            result.deadlink.list.push({ ...baseReportObj, errMsg: 'Hash is not found' });
+          } else if (urlObj.hash) {
+            let hash = decodeURIComponent(urlObj.hash.substring(1));
+
+            // check slugify
+            const slugHash = slugify(hash, false);
+            if (slugHash !== hash) {
+              if (fix) {
+                urlObj.hash = slugHash;
+              } else {
+                result.deadlink.list.push({ ...baseReportObj, errMsg: 'Hash should slugify' });
+              }
+
+              hash = slugHash;
+            }
+
+            if (!hasHeading(matchAbUrl, hash)) {
+              // hash is not found
+              result.deadlink.list.push({ ...baseReportObj, errMsg: 'Hash is not found' });
+            }
           }
 
           if (fix) {
@@ -323,33 +364,46 @@ async function check(options) {
  * @param {CheckOption} options
  */
 async function checkAndThrow(options) {
+  options = initOption(options);
+
   console.info('Checking markdown...');
   const result = await check(options);
 
-  let hasErrorMsg = false; // whether has error msg
-  let shouldExit = false; // whether should exit
+  const errorLevels = [];
   Object.keys(result).forEach(k => {
+    /** @type {ReportResult} */
     const item = result[k];
     if (!item.list.length) {
       return;
     }
 
-    hasErrorMsg = true;
-    console[item.type](convertErrMsg(item));
-    if (item.exit) shouldExit = true;
+    const level = LOG_LEVELS[item.type];
+    errorLevels.push(level);
+    if (level > LOG_LEVELS.none) {
+      console[item.type](convertErrMsg(item));
+    }
   });
 
-  if (!hasErrorMsg) {
-    console.info('Checking passed');
+  // tips for fix
+  if (errorLevels.length) {
+    console.info(chalk.gray('Executes with --fix to fix automatically\n'));
   }
 
-  if (shouldExit) {
+  // should not exit if exitLevel is none
+  const exitLevel = LOG_LEVELS[options.exitLevel.toLowerCase()];
+  if (exitLevel !== LOG_LEVELS.none && errorLevels.find(level => level >= exitLevel)) {
+    console.info(chalk.red('Checking failed\n'));
     process.exit(1);
+  } else {
+    console.info(chalk.green('Checking passed\n'));
   }
 }
 
+/**
+ * @param {ReportResult} obj
+ */
 function convertErrMsg(obj) {
-  return `\n${obj.msg}\n\n` +
+  return `\n${obj.type === 'error' ? chalk.red(obj.msg) : (obj.type === 'warn' ? chalk.yellow(obj.msg) : obj.msg)}\n\n` +
     obj.list
       .map(item => `  ${chalk.red(item.errMsg)}: ${item.fullText} ${chalk.gray(`(${item.fileUrl}:${item.line}:${item.col})`)}`)
       .join('\n') +

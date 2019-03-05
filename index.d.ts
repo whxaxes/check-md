@@ -1,10 +1,12 @@
 export interface CheckOption {
   cwd: string;
   fix?: boolean;
+  exitLevel?: any;
   root?: string[];
   defaultIndex?: string[];
   preset?: string;
-  pattern?: string;
+  pattern?: string | string[];
+  ignore?: string | string[];
 }
 export interface ReportListItem {
   errMsg: string;
@@ -17,8 +19,7 @@ export interface ReportListItem {
 export interface ReportResult {
   msg: string;
   list: ReportListItem[];
-  type: string | string | string | string;
-  exit: boolean;
+  type: any;
 }
 export interface T100 {
   warning: ReportResult;
@@ -43,7 +44,9 @@ export interface T102 {
   defaultIndex: string[];
   root: string[];
   pattern: string;
+  ignore: string[];
   cwd: string;
+  exitLevel: string;
 }
 export interface T103 {
   vuepress: T101;

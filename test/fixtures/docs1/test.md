@@ -23,3 +23,5 @@ abc [test1]()
 [test10]: ./dir/
 
 [test11]: /dir/
+
+[test12](./other.md#ctx.get(name))
