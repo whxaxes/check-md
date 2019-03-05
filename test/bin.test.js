@@ -16,8 +16,8 @@ describe('test/bin.test.js', () => {
   it('should works with preset', async () => {
     await coffee.fork(binPath, [ '-p', 'vuepress' ], { cwd: path.resolve(__dirname, './fixtures/vuepress') })
       .expect('stderr', /Checking failed/)
-      .expect('stderr', /vuepress\/docs\/readme\.md/)
-      .notExpect('stderr', /vuepress\/other\.md/)
+      .expect('stderr', /readme\.md/)
+      .notExpect('stderr', /other\.md/)
       .notExpect('stderr', /\!\[avatar\]\(\/5856440\.jpg\)/)
       .expect('code', 1)
       // .debug()
