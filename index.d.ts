@@ -39,6 +39,7 @@ declare function checkAndThrow_1(options: CheckOption): Promise<void>;
 export const checkAndThrow: typeof checkAndThrow_1;
 export interface T101 {
   root: string[];
+  cwd: string;
 }
 export interface T102 {
   defaultIndex: string[];
