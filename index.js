@@ -26,6 +26,7 @@ const dirtyContentList = [];
 const presetConfig = {
   vuepress: {
     root: [ './', './.vuepress/public' ],
+    cwd: path.resolve(process.cwd(), './docs'),
   },
   default: {
     defaultIndex: [ 'README.md', 'readme.md' ],
@@ -392,7 +393,7 @@ async function checkAndThrow(options) {
   // should not exit if exitLevel is none
   const exitLevel = LOG_LEVELS[options.exitLevel.toLowerCase()];
   if (exitLevel !== LOG_LEVELS.none && errorLevels.find(level => level >= exitLevel)) {
-    console.info(chalk.red('Checking failed\n'));
+    console.error(chalk.red('Checking failed\n'));
     process.exit(1);
   } else {
     console.info(chalk.green('Checking passed\n'));
