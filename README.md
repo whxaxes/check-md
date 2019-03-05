@@ -25,5 +25,36 @@
 ## Usage
 
 ```bash
-npm i check-md --save
+$ npm i check-md --save
+$ npx check-md
+```
+
+## Options
+
+```
+Usage: check-md [options]
+
+Options:
+  -v, --version            output the version number
+  -f, --fix                Check and try to fix
+  -c, --cwd [path]         Working directory of check-md, default to process.cwd()
+  -r, --root [path]        Checking url root, default to ./
+  -p, --preset [name]      Preset config(eg vuepress, default)
+  -P, --pattern [pattern]  Glob patterns, default to **/*.md
+  -i, --ignore [pattern]   Ignore patterns, will merge to pattern, default to **/node_modules
+  --exit-level [level]     Process exit level, default to error, other choice is warn and none, it will not exit if setting to none
+  --default-index [index]  Default index in directory, default to README.md,readme.md
+  -h, --help               output usage information
+```
+
+configure in `package.json`
+
+```json
+{
+  "check-md": {
+    "cwd": "./",
+    "defaultIndex": [ "index.md" ],
+    "exitLevel": "warn",
+  }
+}
 ```
