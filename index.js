@@ -160,6 +160,25 @@ function createReportResult({ type, exit, msgFn }) {
   };
 }
 
+// check file exist
+const existCache = new Map();
+function fileExist(fileUrl) {
+  if (existCache.has(fileUrl)) {
+    return existCache.get(fileUrl);
+  }
+  const isExist = fs.existsSync(fileUrl);
+  existCache.set(fileUrl, isExist);
+  return isExist;
+}
+
+// get file stat
+function getFileStat(fileUrl) {
+  if (!fileExist(fileUrl)) {
+    return;
+  }
+  return fs.statSync(fileUrl);
+}
+
 /**
  * check markdown
  * @param {CheckOption} options
@@ -187,17 +206,6 @@ async function check(options) {
     }),
   };
 
-  // check file exist
-  const existCache = new Map();
-  const fileExist = fileUrl => {
-    if (existCache.has(fileUrl)) {
-      return existCache.get(fileUrl);
-    }
-    const isExist = fs.existsSync(fileUrl);
-    existCache.set(fileUrl, isExist);
-    return isExist;
-  };
-
   // normalize url
   const normalizeUrl = (fileUrl, ext) => {
     ext = ext || path.extname(fileUrl);
@@ -205,7 +213,8 @@ async function check(options) {
       // convert html to md
       return `${fileUrl.substring(0, fileUrl.length - 4)}md`;
     } else if (!ext) {
-      if (fileUrl.endsWith('/')) {
+      const stat = getFileStat(fileUrl);
+      if (fileUrl.endsWith('/') || (stat && stat.isDirectory())) {
         // directory, try to find file with defaultIndex
         return defaultIndex.map(index => `${fileUrl}/${index}`).find(f => fileExist(f));
       }
@@ -267,7 +276,7 @@ async function check(options) {
             ext = path.extname(matchAbUrl);
           }
 
-          matchAbUrl = normalizeUrl(matchAbUrl, ext);
+          matchAbUrl = matchAbUrl && normalizeUrl(matchAbUrl, ext);
           if (ext === '.html') {
             // warning
             if (fix) {

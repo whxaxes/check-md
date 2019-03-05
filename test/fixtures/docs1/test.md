@@ -19,3 +19,7 @@ abc [test1]()
 [test8](/other#cccc)
 
 [test9](/123.md#cccc)
+
+[test10]: ./dir/
+
+[test11]: /dir/
