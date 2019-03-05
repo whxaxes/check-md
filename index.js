@@ -3,17 +3,21 @@ const fs = require('fs');
 const path = require('path');
 const chalk = require('chalk');
 const url = require('url');
+const diacritics = require('diacritics');
 const assert = require('assert');
-const headingRE = /(?:\r?\n|^)#+ ([^\n]+)/g;
+const headingRE = /(?:\r?\n|^)#+([^\n]+)/g;
 const matchUrlStr = c => `([^${c}]*)`;
 const matchAnchorStr = `((?:\\!)?\\[[^\\]\\r\\n]+\\])(?:(?:\\: *${matchUrlStr('\\r\\n')})|(?:\\(${matchUrlStr('\\)')}\\)))`;
 const matchAnchorRE = new RegExp(`(?:\\r?\\n|${matchAnchorStr})`);
+// eslint-disable-next-line no-control-regex
+const rControl = /[\u0000-\u001f]/g;
+const rSpecial = /[\s~`!@#$%^&*()\-_+=[\]{}|\\;:"'<>,.?/]+/g;
 
 /** @type {Map<String, CacheObj>} */
 const contentCache = new Map();
 const dirtyContentList = [];
 
-exports.presetConfig = {
+const presetConfig = {
   vuepress: {
     root: [ './', './.vuepress/public' ],
   },
@@ -44,9 +48,19 @@ exports.presetConfig = {
  */
 
 /**
+ * @typedef {Object} ReportListItem
+ * @property {String} ReportResult.errMsg
+ * @property {String} ReportResult.matchUrl
+ * @property {String} ReportResult.fullText
+ * @property {String} ReportResult.fileUrl
+ * @property {Number} ReportResult.line
+ * @property {Number} ReportResult.col
+ */
+
+/**
  * @typedef {Object} ReportResult
  * @property {String} ReportResult.msg
- * @property {Array<String>} ReportResult.list
+ * @property {Array<ReportListItem>} ReportResult.list
  * @property {'error' | 'info' | 'log' | 'warn'} ReportResult.type
  * @property {Boolean} ReportResult.exit
  */
@@ -62,12 +76,29 @@ function hasHeading(fileUrl, heading) {
   if (!cacheObj.headings) {
     cacheObj.headings = [];
     cacheObj.content.replace(headingRE, (_, hash) => {
-      cacheObj.headings.push(hash.trim().toLowerCase().replace(/ /g, '-'));
+      cacheObj.headings.push(slugify(hash.trim()));
     });
   }
 
   heading = heading.toLowerCase();
   return cacheObj.headings.includes(heading);
+}
+
+// slugify
+function slugify(str) {
+  return diacritics.remove(str)
+    // Remove control characters
+    .replace(rControl, '')
+    // Replace special characters
+    .replace(rSpecial, '-')
+    // Remove continous separators
+    .replace(/\-{2,}/g, '-')
+    // Remove prefixing and trailing separtors
+    .replace(/^\-+|\-+$/g, '')
+    // ensure it doesn't start with a number (#121)
+    .replace(/^(\d)/, '_$1')
+    // lowercase
+    .toLowerCase();
 }
 
 /**
@@ -133,11 +164,11 @@ function createReportResult({ type, exit, msgFn }) {
  * check markdown
  * @param {CheckOption} options
  */
-exports.check = async options => {
-  if (options.preset && exports.presetConfig[options.preset]) {
-    options = Object.assign({}, exports.presetConfig.default, exports.presetConfig[options.preset], options);
+async function check(options) {
+  if (options.preset && presetConfig[options.preset]) {
+    options = Object.assign({}, presetConfig.default, presetConfig[options.preset], options);
   } else {
-    options = Object.assign({}, exports.presetConfig.default, options);
+    options = Object.assign({}, presetConfig.default, options);
   }
 
   const { cwd, defaultIndex, root, fix, pattern } = options;
@@ -154,6 +185,34 @@ exports.check = async options => {
       type: 'error',
       exit: true,
     }),
+  };
+
+  // check file exist
+  const existCache = new Map();
+  const fileExist = fileUrl => {
+    if (existCache.has(fileUrl)) {
+      return existCache.get(fileUrl);
+    }
+    const isExist = fs.existsSync(fileUrl);
+    existCache.set(fileUrl, isExist);
+    return isExist;
+  };
+
+  // normalize url
+  const normalizeUrl = (fileUrl, ext) => {
+    ext = ext || path.extname(fileUrl);
+    if (ext === '.html') {
+      // convert html to md
+      return `${fileUrl.substring(0, fileUrl.length - 4)}md`;
+    } else if (!ext) {
+      if (fileUrl.endsWith('/')) {
+        // directory, try to find file with defaultIndex
+        return defaultIndex.map(index => `${fileUrl}/${index}`).find(f => fileExist(f));
+      }
+
+      return `${fileUrl}.md`;
+    }
+    return fileUrl;
   };
 
   // each files
@@ -194,14 +253,12 @@ exports.check = async options => {
           const pathname = urlObj.pathname || '';
           let ext = path.extname(pathname);
           let matchAbUrl;
-          let fileExist = null;
 
           if (pathname) {
             if (pathname.charAt(0) === '/') {
               // find exist file
-              matchAbUrl = root.map(r => path.join(cwd, r, pathname.substring(1)))
-                .find(f => fs.existsSync(f));
-              fileExist = !!matchAbUrl;
+              matchAbUrl = root.map(r => normalizeUrl(path.join(cwd, r, pathname.substring(1)), ext))
+                .find(f => fileExist(f));
             } else {
               matchAbUrl = path.resolve(dirname, pathname);
             }
@@ -210,31 +267,18 @@ exports.check = async options => {
             ext = path.extname(matchAbUrl);
           }
 
+          matchAbUrl = normalizeUrl(matchAbUrl, ext);
           if (ext === '.html') {
-            // convert html to md
-            matchAbUrl = `${matchAbUrl.substring(0, matchAbUrl.length - 4)}md`;
-
+            // warning
             if (fix) {
               // replace .html to .md
               urlObj.pathname = `${urlObj.pathname.substring(0, urlObj.pathname.length - 4)}md`;
             } else {
               result.warning.list.push({ ...baseReportObj, errMsg: 'Should use .md instead of .html' });
             }
-          } else if (!ext) {
-            if (pathname.endsWith('/')) {
-              // directory
-              matchAbUrl = defaultIndex.map(index => `${matchAbUrl}/${index}`).find(f => fs.existsSync(f));
-              fileExist = !!matchAbUrl;
-            } else {
-              matchAbUrl = `${matchAbUrl}.md`;
-            }
           }
 
-          if (fileExist === null) {
-            fileExist = fs.existsSync(matchAbUrl);
-          }
-
-          if (!matchAbUrl || !fileExist) {
+          if (!matchAbUrl || !fileExist(matchAbUrl)) {
             // file is not found
             result.deadlink.list.push({ ...baseReportObj, errMsg: 'File is not found' });
           } else if (urlObj.hash && !hasHeading(matchAbUrl, decodeURIComponent(urlObj.hash.substring(1)))) {
@@ -262,15 +306,16 @@ exports.check = async options => {
 
   flushSetContent();
   return result;
-};
+}
+
 
 /**
  * check and throw
  * @param {CheckOption} options
  */
-exports.checkAndThrow = async options => {
+async function checkAndThrow(options) {
   console.info('Checking markdown...');
-  const result = await exports.check(options);
+  const result = await check(options);
 
   let hasErrorMsg = false; // whether has error msg
   let shouldExit = false; // whether should exit
@@ -292,7 +337,7 @@ exports.checkAndThrow = async options => {
   if (shouldExit) {
     process.exit(1);
   }
-};
+}
 
 function convertErrMsg(obj) {
   return `\n${obj.msg}\n\n` +
@@ -301,3 +346,10 @@ function convertErrMsg(obj) {
       .join('\n') +
     '\n';
 }
+
+// export list
+exports.check = check;
+exports.checkAndThrow = checkAndThrow;
+exports.presetConfig = presetConfig;
+exports.setContent = setContent;
+exports.getContent = getContent;
