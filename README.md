@@ -1,7 +1,5 @@
 # check-md
 
-
-
 [![NPM version][npm-image]][npm-url]
 [![build status][travis-image]][travis-url]
 [![Test coverage][codecov-image]][codecov-url]
@@ -21,6 +19,8 @@
 [snyk-url]: https://snyk.io/test/npm/check-md
 [download-image]: https://img.shields.io/npm/dm/check-md.svg?style=flat-square
 [download-url]: https://npmjs.org/package/check-md
+
+A simple cli for checking dead links of markdown.
 
 ## Usage
 
@@ -57,4 +57,31 @@ configure in `package.json`
     "exitLevel": "warn",
   }
 }
+```
+
+##  Example
+
+Running cli in directory of [test.md](https://github.com/whxaxes/check-md/blob/master/test/fixtures/docs1/test.md)
+
+The result is
+
+```
+Checking markdown...
+
+1 warning was found
+
+  Should use .md instead of .html: [test6](./other.html#ctx-get-name) (/Users/Workspace/check-md/test/fixtures/docs1/test.md:15:1)
+
+
+5 dead links was found
+
+  Url link is empty: [test1]() (/Users/Workspace/check-md/test/fixtures/docs1/test.md:5:5)
+  Hash is not found: [test8](/other#cccc) (/Users/Workspace/check-md/test/fixtures/docs1/test.md:19:1)
+  File is not found: [test9](/123.md#cccc) (/Users/Workspace/check-md/test/fixtures/docs1/test.md:21:1)
+  Hash should slugify: [test12](./other.md#ctx.get(name) (/Users/Workspace/check-md/test/fixtures/docs1/test.md:27:1)
+  File is not found: [test16](./123.md#ctx.get(name) (/Users/Workspace/check-md/test/fixtures/docs1/test.md:39:1)
+
+Executes with --fix to fix automatically
+
+Checking failed
 ```
