@@ -25,3 +25,15 @@ abc [test1]()
 [test11]: /dir/
 
 [test12](./other.md#ctx.get(name))
+
+```
+[test13](./123.md#ctx.get(name))
+```
+
+```bash
+[test14](./123.md#ctx.get(name))
+```
+
+```[test15](./123.md#ctx.get(name))```
+
+[test16](./123.md#ctx.get(name))

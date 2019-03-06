@@ -8,7 +8,7 @@ const assert = require('assert');
 const headingRE = /(?:\r?\n|^)#+([^\n]+)/g;
 const matchUrlStr = c => `([^${c}]*)`;
 const matchAnchorStr = `((?:\\!)?\\[[^\\]\\r\\n]+\\])(?:(?:\\: *${matchUrlStr('\\r\\n')})|(?:\\(${matchUrlStr('\\)')}\\)))`;
-const matchAnchorRE = new RegExp(`(?:\\r?\\n|${matchAnchorStr})`);
+const matchAnchorRE = new RegExp(`(?:\\r?\\n|\`\`\`|${matchAnchorStr})`);
 // eslint-disable-next-line no-control-regex
 const rControl = /[\u0000-\u001f]/g;
 const rSpecial = /[\s~`!@#$%^&*()\-_+=[\]{}|\\;:"'<>,.?/]+/g;
@@ -261,6 +261,7 @@ async function check(options) {
     let lineIndex = 0;
     let scanIndex = 0;
     let collectContent = '';
+    let inBlock = false;
 
     while ((matches = content.match(matchAnchorRE))) {
       const char = matches[0];
@@ -274,7 +275,10 @@ async function check(options) {
         // new line
         line++;
         lineIndex = scanIndex + matches.index + char.length;
-      } else {
+      } else if (char === '```') {
+        // code block
+        inBlock = !inBlock;
+      } else if (!inBlock) {
         const col = collectContent.length - char.length - lineIndex + 1;
         const baseReportObj = { matchUrl, fullText: char, fileUrl, line, col };
         const urlObj = url.parse(matchUrl);

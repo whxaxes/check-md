@@ -9,12 +9,13 @@ describe('test/index.test.js', () => {
 
   it('should works without error', async () => {
     const result = await checkMd.check({ cwd: path.resolve(__dirname, './fixtures/docs1') });
-    assert(result.deadlink.list.length === 4);
+    assert(result.deadlink.list.length === 5);
     assert(result.warning.list.length === 1);
     assert(result.deadlink.list[0].fullText.includes('[test1]'));
     assert(result.deadlink.list[1].fullText.includes('[test8]'));
     assert(result.deadlink.list[2].fullText.includes('[test9]'));
     assert(result.deadlink.list[3].fullText.includes('[test12]'));
+    assert(result.deadlink.list[4].fullText.includes('[test16]'));
     assert(result.deadlink.list[3].errMsg.includes('slugify'));
     assert(result.warning.list[0].fullText.includes('[test6]'));
   });
