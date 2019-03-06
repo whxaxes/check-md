@@ -1,3 +1,5 @@
+// Generate by [js2dts](https://github.com/whxaxes/js2dts#readme)
+
 export interface CheckOption {
   cwd: string;
   fix?: boolean;
