@@ -26,6 +26,7 @@ const dirtyContentList = [];
 const presetConfig = {
   vuepress: {
     root: [ './', './.vuepress/public' ],
+    slugify: defaultSlugify,
     cwd: path.resolve(process.cwd(), './docs'),
   },
   default: {
@@ -35,6 +36,7 @@ const presetConfig = {
     ignore: [ '**/node_modules' ],
     cwd: process.cwd(),
     exitLevel: 'error',
+    slugify: defaultSlugify,
   },
 };
 
@@ -79,9 +81,10 @@ const presetConfig = {
  * check md's heading
  * @param {String} fileUrl
  * @param {String} heading
+ * @param {Function} slugify
  * @return {Boolean}
  */
-function hasHeading(fileUrl, heading) {
+function hasHeading(fileUrl, heading, slugify) {
   const cacheObj = getContent(fileUrl);
   if (!cacheObj.headings) {
     cacheObj.headings = [];
@@ -95,7 +98,7 @@ function hasHeading(fileUrl, heading) {
 }
 
 // slugify
-function slugify(str, lower = true) {
+function defaultSlugify(str, lower = true) {
   str = diacritics.remove(str)
     // Remove control characters
     .replace(rControl, '')
@@ -323,8 +326,10 @@ async function check(options) {
           } else if (urlObj.hash) {
             let hash = decodeURIComponent(urlObj.hash.substring(1));
 
+            const slugify = options.slugify || defaultSlugify
             // check slugify
             const slugHash = slugify(hash, false);
+
             if (slugHash !== hash) {
               if (fix) {
                 urlObj.hash = slugHash;
@@ -335,7 +340,7 @@ async function check(options) {
               hash = slugHash;
             }
 
-            if (!hasHeading(matchAbUrl, hash)) {
+            if (!hasHeading(matchAbUrl, hash, slugify)) {
               // hash is not found
               result.deadlink.list.push({ ...baseReportObj, errMsg: 'Hash is not found' });
             }
