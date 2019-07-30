@@ -165,7 +165,7 @@ function flushSetContent() {
  * @param {Object} options
  * @param {ReportResult['type']} options.type
  * @param {(p: ReportResult) => ReportResult['msg']} options.msgFn
- * @returns {ReportResult}
+ * @return {ReportResult}
  */
 function createReportResult({ type, msgFn }) {
   return {
@@ -326,7 +326,7 @@ async function check(options) {
           } else if (urlObj.hash) {
             let hash = decodeURIComponent(urlObj.hash.substring(1));
 
-            const slugify = options.slugify || defaultSlugify
+            const slugify = options.slugify || defaultSlugify;
             // check slugify
             const slugHash = slugify(hash, false);
 
