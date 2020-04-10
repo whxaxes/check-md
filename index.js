@@ -323,6 +323,18 @@ async function check(options) {
               result.warning.list.push({ ...baseReportObj, errMsg: 'Should use .md instead of .html' });
             }
           }
+          // md file should always have .md extension to not confused with any other type of file
+          if (ext === '') {
+            const dirBaseFileWithSlash = `${urlObj.path}/README.md`.slice(1);
+            const dirBaseFile = `${urlObj.path}README.md`.slice(1);
+            // Check if missing extension link is a directory with a base README.md file
+            if (!(files.includes(dirBaseFileWithSlash) || files.includes(dirBaseFile))) {
+              const fileWithMDext = `${urlObj.path}.md`.slice(1);
+              if (files.includes(fileWithMDext)) {
+                result.warning.list.push({ ...baseReportObj, errMsg: 'File found with this name but .md extension missing' });
+              }
+            }
+          }
 
           if (!matchAbUrl || !fileExist(matchAbUrl)) {
             // file is not found
