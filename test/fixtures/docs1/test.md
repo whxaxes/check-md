@@ -37,3 +37,6 @@ aaa
 asdasd11123 ```[test15](./123.md#ctx.get(name))```
 
 [test16](./123.md#ctx.get(name))
+
+[test17](/dir)
+[test18](/dir#test)
