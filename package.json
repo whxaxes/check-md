@@ -5,7 +5,6 @@
   "bin": {
     "check-md": "./bin.js"
   },
-  "resolutions": { "core-js": "3" },
   "dependencies": {
     "chalk": "^4.0.0",
     "commander": "^5.0.0",
