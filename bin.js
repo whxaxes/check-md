@@ -28,7 +28,7 @@ const options = {
   pattern: program.pattern ? program.pattern.split(',') : undefined,
   ignore: program.ignore ? program.ignore.split(',') : undefined,
   defaultIndex: program.defaultIndex ? program.defaultIndex.split(',') : undefined,
-  strictExt: program.strictExt ? program.strictExt : undefined
+  strictExt: program.strictExt ? program.strictExt : undefined,
 };
 
 Object.keys(options).forEach(k => {
