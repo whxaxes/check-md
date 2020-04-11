@@ -43,6 +43,5 @@ if (packageInfo['check-md']) {
   // read from package.json
   Object.assign(options, packageInfo['check-md']);
 }
-console.log({ options });
 
 checkAndThrow(options);
