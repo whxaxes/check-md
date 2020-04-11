@@ -331,6 +331,7 @@ async function check(options) {
             // Check if missing extension link is a directory with a base README.md file
             if (!(files.includes(dirBaseFileWithSlash) || files.includes(dirBaseFile))) {
               const fileWithMDext = `${urlObj.path}.md`.slice(1);
+              // Check if missing extension link is a known markdown file.
               if (files.includes(fileWithMDext)) {
                 result.warning.list.push({ ...baseReportObj, errMsg: 'File found with this name but .md extension missing' });
               }

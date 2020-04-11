@@ -8,6 +8,44 @@ describe('test/index.test.js', () => {
   afterEach(mm.restore);
 
   it('should works without error', async () => {
+    const result = await checkMd.check({ cwd: path.resolve(__dirname, './fixtures/docs1') });
+    assert(result.deadlink.list.length === 5);
+    assert(result.warning.list.length === 1);
+    assert(result.deadlink.list[0].fullText.includes('[test1]'));
+    assert(result.deadlink.list[0].line === 5);
+    assert(result.deadlink.list[0].col === 5);
+    assert(result.deadlink.list[1].fullText.includes('[test8]'));
+    assert(result.deadlink.list[1].line === 19);
+    assert(result.deadlink.list[1].col === 1);
+    assert(result.deadlink.list[2].fullText.includes('[test9]'));
+    assert(result.deadlink.list[2].line === 21);
+    assert(result.deadlink.list[2].col === 13);
+    assert(result.deadlink.list[3].fullText.includes('[test12]'));
+    assert(result.deadlink.list[4].fullText.includes('[test16]'));
+    assert(result.deadlink.list[3].errMsg.includes('slugify'));
+    assert(result.warning.list[0].fullText.includes('[test6]'));
+  });
+
+  it('should works without error in strict mode', async () => {
+    const result = await checkMd.check({ cwd: path.resolve(__dirname, './fixtures/docs1'), strictExt: true });
+    assert(result.deadlink.list.length === 6);
+    assert(result.warning.list.length === 3);
+    assert(result.deadlink.list[0].fullText.includes('[test1]'));
+    assert(result.deadlink.list[0].line === 5);
+    assert(result.deadlink.list[0].col === 5);
+    assert(result.deadlink.list[1].fullText.includes('[test8]'));
+    assert(result.deadlink.list[1].line === 19);
+    assert(result.deadlink.list[1].col === 1);
+    assert(result.deadlink.list[2].fullText.includes('[test9]'));
+    assert(result.deadlink.list[2].line === 21);
+    assert(result.deadlink.list[2].col === 13);
+    assert(result.deadlink.list[3].fullText.includes('[test12]'));
+    assert(result.deadlink.list[4].fullText.includes('[test16]'));
+    assert(result.deadlink.list[3].errMsg.includes('slugify'));
+    assert(result.warning.list[0].fullText.includes('[test6]'));
+  });
+
+  it('should works without error in strict mode', async () => {
     const result = await checkMd.check({ cwd: path.resolve(__dirname, './fixtures/docs1'), strictExt: true });
     assert(result.deadlink.list.length === 6);
     assert(result.warning.list.length === 3);
