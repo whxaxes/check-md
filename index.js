@@ -34,6 +34,7 @@ const presetConfig = {
     root: [ './' ],
     pattern: '**/*.md',
     ignore: [ '**/node_modules' ],
+    ignoreFootnotes: false,
     cwd: process.cwd(),
     exitLevel: 'error',
     slugify: defaultSlugify,
@@ -58,6 +59,7 @@ const presetConfig = {
  * @property {String} [CheckOption.preset]
  * @property {String | Array<String>} [CheckOption.pattern]
  * @property {String | Array<String>} [CheckOption.ignore]
+ * @property {Boolean} [CheckOption.ignoreFootnotes]
  */
 
 /**
@@ -217,7 +219,7 @@ function initOption(options) {
  */
 async function check(options) {
   options = initOption(options);
-  const { cwd, defaultIndex, root, fix, pattern, ignore } = options;
+  const { cwd, defaultIndex, root, fix, pattern, ignore, ignoreFootnotes } = options;
   assert(Array.isArray(root), 'options.root must be array');
   const globPattern = (Array.isArray(pattern) ? pattern : [ pattern ]).concat(
     (Array.isArray(ignore) ? ignore : [ ignore ]).map(p => `!${p}`)
@@ -287,6 +289,8 @@ async function check(options) {
         const urlObj = url.parse(matchUrl);
         if (urlObj.protocol) {
           // do nothing with remote url
+        } else if (ignoreFootnotes && char.startsWith('[^')) {
+          // do nothing with footnote
         } else if (!matchUrl) {
           // empty url
           result.deadlink.list.push({ ...baseReportObj, errMsg: 'Url link is empty' });
