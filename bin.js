@@ -27,7 +27,7 @@ const options = {
   exitLevel: program.exitLevel,
   pattern: program.pattern ? program.pattern.split(',') : undefined,
   ignore: program.ignore ? program.ignore.split(',') : undefined,
-  ignoreFootnotes: false,
+  ignoreFootnotes: program.ignoreFootnotes,
   defaultIndex: program.defaultIndex ? program.defaultIndex.split(',') : undefined,
 };
 
