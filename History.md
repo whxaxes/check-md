@@ -1,4 +1,11 @@
 
+1.0.1 / 2020-06-28
+==================
+
+**fixes**
+  * [[`8b97536`](http://github.com/whxaxes/check-md/commit/8b97536a5d6442eaf5147b27f09d7d684bafa3d6)] - fix: allow ignoring the footnotes (#8) (Sacha <<sacha.bejaud@outlook.com>>)
+  * [[`11d7071`](http://github.com/whxaxes/check-md/commit/11d70711a581f845f3959e017e9695a0fe558b1d)] - fix: ci (wanghx <<whx89768@alibaba-inc.com>>)
+
 1.0.0 / 2019-07-30
 ==================
 
