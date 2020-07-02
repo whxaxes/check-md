@@ -42,6 +42,6 @@ Footnotes[^test17] test ref
 
 [^test17]: Footnote description
 
-![test18](./dir/placeholder-image.png "Test alt attribute")
+![test18](./dir/placeholder-image.png "Test title attribute")
 
-![test19](./dir/not-exist.png "Test alt attribute")
+![test19](./dir/not-exist.png "Test title attribute")
