@@ -6,7 +6,7 @@ const url = require('url');
 const diacritics = require('diacritics');
 const assert = require('assert');
 const headingRE = /(?:\r?\n|^)#+([^\n]+)/g;
-const imgAltRE = /^(.*?) ".*?"$/;
+const imgTitleRE = /^(.*?) ".*?"$/;
 const matchUrlStr = c => `([^${c}]*)`;
 const matchAnchorStr = `((?:\\!)?\\[[^\\]\\r\\n]+\\])(?:(?:\\: *${matchUrlStr('\\r\\n')})|(?:\\(${matchUrlStr('\\)')}\\)))`;
 const matchAnchorRE = new RegExp(`(?:\\r?\\n|\`\`\`|${matchAnchorStr})`);
@@ -286,9 +286,9 @@ async function check(options) {
         inBlock = !inBlock;
       } else if (!inBlock) {
         // Support image alt attribute
-        const altMatch = matchUrl.match(imgAltRE);
-        if (altMatch) {
-          matchUrl = altMatch[1];
+        const imgTitleMatch = matchUrl.match(imgTitleRE);
+        if (imgTitleMatch) {
+          matchUrl = imgTitleMatch[1];
         }
         const col = collectContent.length - char.length - lineIndex + 1;
         const baseReportObj = { matchUrl, fullText: char, fileUrl, line, col };
