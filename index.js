@@ -35,6 +35,7 @@ const presetConfig = {
     pattern: '**/*.md',
     ignore: [ '**/node_modules' ],
     ignoreFootnotes: false,
+    ignorePaths: [],
     cwd: process.cwd(),
     exitLevel: 'error',
     slugify: defaultSlugify,
@@ -219,7 +220,7 @@ function initOption(options) {
  */
 async function check(options) {
   options = initOption(options);
-  const { cwd, defaultIndex, root, fix, pattern, ignore, ignoreFootnotes } = options;
+  const { cwd, defaultIndex, root, fix, pattern, ignore, ignoreFootnotes, ignorePaths } = options;
   assert(Array.isArray(root), 'options.root must be array');
   const globPattern = (Array.isArray(pattern) ? pattern : [ pattern ]).concat(
     (Array.isArray(ignore) ? ignore : [ ignore ]).map(p => `!${p}`)
@@ -300,7 +301,7 @@ async function check(options) {
           let ext = path.extname(pathname);
           let matchAbUrl;
 
-          if (pathname) {
+          if (pathname && !ignorePaths.includes(pathname)) {
             if (pathname.charAt(0) === '/') {
               // find exist file
               matchAbUrl = root.map(r => normalizeUrl(path.join(cwd, r, pathname.substring(1)), ext))
