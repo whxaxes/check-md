@@ -9,7 +9,7 @@ describe('test/index.test.js', () => {
 
   it('should works without error', async () => {
     const result = await checkMd.check({ cwd: path.resolve(__dirname, './fixtures/docs1') });
-    assert(result.deadlink.list.length === 5);
+    assert(result.deadlink.list.length === 6);
     assert(result.warning.list.length === 1);
     assert(result.deadlink.list[0].fullText.includes('[test1]'));
     assert(result.deadlink.list[0].line === 5);
