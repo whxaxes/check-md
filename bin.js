@@ -16,7 +16,8 @@ const program = new Command()
   .option('-i, --ignore [pattern]', `Ignore patterns, will merge to pattern, default to ${presetConfig.default.ignore.join(',')}`)
   .option('--ignore-footnotes', `Ignore footnotes, default to ${presetConfig.default.ignoreFootnotes}`)
   .option('--exit-level [level]', `Process exit level, default to ${presetConfig.default.exitLevel}, other choice is warn and none, it will not exit if setting to none`)
-  .option('--default-index [index]', `Default index in directory, default to ${presetConfig.default.defaultIndex.join(',')}`);
+  .option('--default-index [index]', `Default index in directory, default to ${presetConfig.default.defaultIndex.join(',')}`)
+  .option('--strict-ext', 'Enables strict extension mode. Where a link to an md file must have the .md extension');
 
 program.parse(process.argv);
 
@@ -29,6 +30,7 @@ const options = {
   ignore: program.ignore ? program.ignore.split(',') : undefined,
   ignoreFootnotes: program.ignoreFootnotes,
   defaultIndex: program.defaultIndex ? program.defaultIndex.split(',') : undefined,
+  strictExt: program.strictExt ? program.strictExt : undefined,
 };
 
 Object.keys(options).forEach(k => {
@@ -41,5 +43,6 @@ if (packageInfo['check-md']) {
   // read from package.json
   Object.assign(options, packageInfo['check-md']);
 }
+console.log({ options });
 
 checkAndThrow(options);

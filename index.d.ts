@@ -3,6 +3,7 @@
 export interface CheckOption {
   cwd: string;
   fix?: boolean;
+  strictExt?: boolean;
   exitLevel?: "none" | "info" | "warn" | "error";
   root?: string[];
   defaultIndex?: string[];

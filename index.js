@@ -60,6 +60,7 @@ const presetConfig = {
  * @property {String | Array<String>} [CheckOption.pattern]
  * @property {String | Array<String>} [CheckOption.ignore]
  * @property {Boolean} [CheckOption.ignoreFootnotes]
+ * @property {Boolean} [CheckOption.strictExt]
  */
 
 /**
@@ -219,7 +220,7 @@ function initOption(options) {
  */
 async function check(options) {
   options = initOption(options);
-  const { cwd, defaultIndex, root, fix, pattern, ignore, ignoreFootnotes } = options;
+  const { cwd, defaultIndex, root, fix, pattern, ignore, ignoreFootnotes, strictExt } = options;
   assert(Array.isArray(root), 'options.root must be array');
   const globPattern = (Array.isArray(pattern) ? pattern : [ pattern ]).concat(
     (Array.isArray(ignore) ? ignore : [ ignore ]).map(p => `!${p}`)
@@ -324,7 +325,7 @@ async function check(options) {
             }
           }
           // md file should always have .md extension to not confused with any other type of file
-          if (ext === '') {
+          if (ext === '' && strictExt) {
             const dirBaseFileWithSlash = `${urlObj.path}/README.md`.slice(1);
             const dirBaseFile = `${urlObj.path}README.md`.slice(1);
             // Check if missing extension link is a directory with a base README.md file

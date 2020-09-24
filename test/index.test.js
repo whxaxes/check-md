@@ -8,9 +8,9 @@ describe('test/index.test.js', () => {
   afterEach(mm.restore);
 
   it('should works without error', async () => {
-    const result = await checkMd.check({ cwd: path.resolve(__dirname, './fixtures/docs1') });
+    const result = await checkMd.check({ cwd: path.resolve(__dirname, './fixtures/docs1'), strictExt: true });
     assert(result.deadlink.list.length === 6);
-    assert(result.warning.list.length === 1);
+    assert(result.warning.list.length === 3);
     assert(result.deadlink.list[0].fullText.includes('[test1]'));
     assert(result.deadlink.list[0].line === 5);
     assert(result.deadlink.list[0].col === 5);
