@@ -41,3 +41,5 @@ asdasd11123 ```[test15](./123.md#ctx.get(name))```
 Footnotes[^test17] test ref
 
 [^test17]: Footnote description
+[test17](/dir)
+[test18](/dir#test)

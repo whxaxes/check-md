@@ -44,6 +44,7 @@ Options:
   -i, --ignore [pattern]   Ignore patterns, will merge to pattern, default to **/node_modules
   --exit-level [level]     Process exit level, default to error, other choice is warn and none, it will not exit if setting to none
   --default-index [index]  Default index in directory, default to README.md,readme.md
+  --strict-ext             Enables strict extension mode. Where a link to an md file must have the .md extension
   -h, --help               output usage information
 ```
 
