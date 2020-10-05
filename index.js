@@ -7,6 +7,7 @@ const diacritics = require('diacritics');
 const assert = require('assert');
 const headingRE = /(?:\r?\n|^)#+([^\n]+)/g;
 const imgTitleRE = /^(.*?) ".*?"$/;
+const imgSizeRE = /^(.*?) =[\dx]+$/;
 const matchUrlStr = c => `([^${c}]*)`;
 const matchAnchorStr = `((?:\\!)?\\[[^\\]\\r\\n]+\\])(?:(?:\\: *${matchUrlStr('\\r\\n')})|(?:\\(${matchUrlStr('\\)')}\\)))`;
 const matchAnchorRE = new RegExp(`(?:\\r?\\n|\`\`\`|${matchAnchorStr})`);
@@ -82,10 +83,10 @@ const presetConfig = {
 
 /**
  * check md's heading
- * @param {String} fileUrl
- * @param {String} heading
- * @param {Function} slugify
- * @return {Boolean}
+ * @param {String} fileUrl - fileUrl
+ * @param {String} heading - heading
+ * @param {Function} slugify - slugify
+ * @return {Boolean} - check result
  */
 function hasHeading(fileUrl, heading, slugify) {
   const cacheObj = getContent(fileUrl);
@@ -123,8 +124,8 @@ function defaultSlugify(str, lower = true) {
 
 /**
  * get content with cache
- * @param {String} fileUrl
- * @return {CacheObj}
+ * @param {String} fileUrl - fileUrl
+ * @return {CacheObj} - CacheObj
  */
 function getContent(fileUrl) {
   if (contentCache.has(fileUrl)) {
@@ -139,8 +140,8 @@ function getContent(fileUrl) {
 
 /**
  * set content with cache
- * @param {String} fileUrl
- * @param {String} content
+ * @param {String} fileUrl - fileUrl
+ * @param {String} content - content
  */
 function setContent(fileUrl, content) {
   const contentResult = getContent(fileUrl);
@@ -165,10 +166,10 @@ function flushSetContent() {
 }
 
 /**
- * @param {Object} options
- * @param {ReportResult['type']} options.type
- * @param {(p: ReportResult) => ReportResult['msg']} options.msgFn
- * @return {ReportResult}
+ * @param {Object} options - options
+ * @param {ReportResult['type']} options.type - options.type
+ * @param {(p: ReportResult) => ReportResult['msg']} options.msgFn - options.msgFn
+ * @return {ReportResult} - result in ReportResult Format
  */
 function createReportResult({ type, msgFn }) {
   return {
@@ -199,7 +200,7 @@ function getFileStat(fileUrl) {
 
 /**
  * init option
- * @param {CheckOption} options
+ * @param {CheckOption} options - options
  */
 function initOption(options) {
   if (options.__init__) return options;
@@ -216,7 +217,7 @@ function initOption(options) {
 
 /**
  * check markdown
- * @param {CheckOption} options
+ * @param {CheckOption} options - options
  */
 async function check(options) {
   options = initOption(options);
@@ -289,6 +290,11 @@ async function check(options) {
         const imgTitleMatch = matchUrl.match(imgTitleRE);
         if (imgTitleMatch) {
           matchUrl = imgTitleMatch[1];
+        }
+        // Support image alt attribute
+        const imgSizeMatch = matchUrl.match(imgSizeRE);
+        if (imgSizeMatch) {
+          matchUrl = imgSizeMatch[1];
         }
         const col = collectContent.length - char.length - lineIndex + 1;
         const baseReportObj = { matchUrl, fullText: char, fileUrl, line, col };
@@ -381,7 +387,7 @@ async function check(options) {
 
 /**
  * check and throw
- * @param {CheckOption} options
+ * @param {CheckOption} options - options
  */
 async function checkAndThrow(options) {
   options = initOption(options);
@@ -420,7 +426,7 @@ async function checkAndThrow(options) {
 }
 
 /**
- * @param {ReportResult} obj
+ * @param {ReportResult} obj - obj
  */
 function convertErrMsg(obj) {
   return `\n${obj.type === 'error' ? chalk.red(obj.msg) : (obj.type === 'warn' ? chalk.yellow(obj.msg) : obj.msg)}\n\n` +
