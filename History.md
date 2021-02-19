@@ -1,4 +1,10 @@
 
+1.0.2 / 2021-02-19
+==================
+
+**fixes**
+  * [[`edb2e79`](http://github.com/whxaxes/check-md/commit/edb2e7937f7edeea3e0a40ca723b95cda9f9b312)] - fix: Image Titles and markdown imsize support (#13) (Jacob <<jacob.verhoeks@gmail.com>>)
+
 1.0.1 / 2020-06-28
 ==================
 

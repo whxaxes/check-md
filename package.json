@@ -1,6 +1,6 @@
 {
   "name": "check-md",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Checks dead links of markdown",
   "bin": {
     "check-md": "./bin.js"
