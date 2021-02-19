@@ -9,7 +9,7 @@ describe('test/index.test.js', () => {
 
   it('should works without error', async () => {
     const result = await checkMd.check({ cwd: path.resolve(__dirname, './fixtures/docs1') });
-    assert(result.deadlink.list.length === 6);
+    assert(result.deadlink.list.length === 9);
     assert(result.warning.list.length === 1);
     assert(result.deadlink.list[0].fullText.includes('[test1]'));
     assert(result.deadlink.list[0].line === 5);
@@ -26,13 +26,14 @@ describe('test/index.test.js', () => {
     assert(result.deadlink.list[5].fullText.includes('[^test17]'));
     assert(result.deadlink.list[5].line === 43);
     assert(result.deadlink.list[5].col === 1);
+    assert(result.deadlink.list[6].fullText.includes('![test19]'));
     assert(result.warning.list[0].fullText.includes('[test6]'));
 
     const resultWithIgnoreFootnotes = await checkMd.check({
       cwd: path.resolve(__dirname, './fixtures/docs1'),
       ignoreFootnotes: true,
     });
-    assert(resultWithIgnoreFootnotes.deadlink.list.length === 5);
+    assert(resultWithIgnoreFootnotes.deadlink.list.length === 8);
   });
 
   it('should fix without error', async () => {
