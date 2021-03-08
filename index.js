@@ -93,7 +93,13 @@ function hasHeading(fileUrl, heading, slugify) {
   if (!cacheObj.headings) {
     cacheObj.headings = [];
     cacheObj.content.replace(headingRE, (_, hash) => {
-      cacheObj.headings.push(slugify(hash.trim()));
+      let i = 2;
+      let slug = slugify(hash.trim());
+      while (cacheObj.headings.includes(slug)) {
+        slug = `${slug}-${i}`;
+        i++;
+      }
+      cacheObj.headings.push(slug);
     });
   }
 

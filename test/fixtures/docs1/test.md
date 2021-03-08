@@ -49,3 +49,5 @@ Footnotes[^test17] test ref
 ![test20](./dir/not-exist.png =200x)
 
 ![test21](./dir/not-exist.png =100x100)
+
+[test22](./other#testother-2)
