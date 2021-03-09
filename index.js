@@ -22,8 +22,8 @@ const LOG_LEVELS = {
 };
 
 /** @type {Map<String, CacheObj>} */
-const contentCache = new Map();
-const dirtyContentList = [];
+let contentCache;
+let dirtyContentList;
 
 const presetConfig = {
   vuepress: {
@@ -37,6 +37,7 @@ const presetConfig = {
     pattern: '**/*.md',
     ignore: [ '**/node_modules' ],
     ignoreFootnotes: false,
+    uniqueSlugStartIndex: 2,
     cwd: process.cwd(),
     exitLevel: 'error',
     slugify: defaultSlugify,
@@ -62,6 +63,7 @@ const presetConfig = {
  * @property {String | Array<String>} [CheckOption.pattern]
  * @property {String | Array<String>} [CheckOption.ignore]
  * @property {Boolean} [CheckOption.ignoreFootnotes]
+ * @property {Number} [CheckOption.uniqueSlugStartIndex]
  */
 
 /**
@@ -86,20 +88,22 @@ const presetConfig = {
  * @param {String} fileUrl - fileUrl
  * @param {String} heading - heading
  * @param {Function} slugify - slugify
+ * @param {Number} uniqueSlugStartIndex - uniqueSlugStartIndex
  * @return {Boolean} - check result
  */
-function hasHeading(fileUrl, heading, slugify) {
+function hasHeading(fileUrl, heading, slugify, uniqueSlugStartIndex) {
   const cacheObj = getContent(fileUrl);
   if (!cacheObj.headings) {
     cacheObj.headings = [];
     cacheObj.content.replace(headingRE, (_, hash) => {
-      let i = 2;
-      let slug = slugify(hash.trim());
-      while (cacheObj.headings.includes(slug)) {
-        slug = `${slug}-${i}`;
+      const slug = slugify(hash.trim());
+      let i = uniqueSlugStartIndex;
+      let uniq = slug;
+      while (cacheObj.headings.includes(uniq)) {
+        uniq = `${slug}-${i}`;
         i++;
       }
-      cacheObj.headings.push(slug);
+      cacheObj.headings.push(uniq);
     });
   }
 
@@ -226,8 +230,12 @@ function initOption(options) {
  * @param {CheckOption} options - options
  */
 async function check(options) {
+  // Clearing cache (this new check could have different options)
+  contentCache = new Map();
+  dirtyContentList = [];
+
   options = initOption(options);
-  const { cwd, defaultIndex, root, fix, pattern, ignore, ignoreFootnotes } = options;
+  const { cwd, defaultIndex, root, fix, pattern, ignore, ignoreFootnotes, uniqueSlugStartIndex } = options;
   assert(Array.isArray(root), 'options.root must be array');
   const globPattern = (Array.isArray(pattern) ? pattern : [ pattern ]).concat(
     (Array.isArray(ignore) ? ignore : [ ignore ]).map(p => `!${p}`)
@@ -362,7 +370,7 @@ async function check(options) {
               hash = slugHash;
             }
 
-            if (!hasHeading(matchAbUrl, hash, slugify)) {
+            if (!hasHeading(matchAbUrl, hash, slugify, uniqueSlugStartIndex)) {
               // hash is not found
               result.deadlink.list.push({ ...baseReportObj, errMsg: 'Hash is not found' });
             }

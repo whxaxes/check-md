@@ -9,6 +9,8 @@ export interface CheckOption {
   preset?: string;
   pattern?: string | string[];
   ignore?: string | string[];
+  uniqueSlugStartIndex?: number;
+  ignoreFootnotes?: boolean;
 }
 export interface ReportListItem {
   errMsg: string;

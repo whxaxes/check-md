@@ -15,6 +15,7 @@ const program = new Command()
   .option('-P, --pattern [pattern]', `Glob patterns, default to ${presetConfig.default.pattern}`)
   .option('-i, --ignore [pattern]', `Ignore patterns, will merge to pattern, default to ${presetConfig.default.ignore.join(',')}`)
   .option('--ignore-footnotes', `Ignore footnotes, default to ${presetConfig.default.ignoreFootnotes}`)
+  .option('--unique-slug-start-index [number]', `Index to start with when making duplicate slugs unique, default to ${presetConfig.default.uniqueSlugStartIndex}`)
   .option('--exit-level [level]', `Process exit level, default to ${presetConfig.default.exitLevel}, other choice is warn and none, it will not exit if setting to none`)
   .option('--default-index [index]', `Default index in directory, default to ${presetConfig.default.defaultIndex.join(',')}`);
 
@@ -28,6 +29,7 @@ const options = {
   pattern: program.pattern ? program.pattern.split(',') : undefined,
   ignore: program.ignore ? program.ignore.split(',') : undefined,
   ignoreFootnotes: program.ignoreFootnotes,
+  uniqueSlugStartIndex: program.uniqueSlugStartIndex,
   defaultIndex: program.defaultIndex ? program.defaultIndex.split(',') : undefined,
 };
 
