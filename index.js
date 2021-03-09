@@ -64,6 +64,7 @@ const presetConfig = {
  * @property {String | Array<String>} [CheckOption.ignore]
  * @property {Boolean} [CheckOption.ignoreFootnotes]
  * @property {Number} [CheckOption.uniqueSlugStartIndex]
+ * @property {typeof defaultSlugify} [CheckOption.slugify]
  */
 
 /**
