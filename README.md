@@ -35,16 +35,18 @@ $ npx check-md
 Usage: check-md [options]
 
 Options:
-  -v, --version            output the version number
-  -f, --fix                Check and try to fix
-  -c, --cwd [path]         Working directory of check-md, default to process.cwd()
-  -r, --root [path]        Checking url root, default to ./
-  -p, --preset [name]      Preset config(eg vuepress, default)
-  -P, --pattern [pattern]  Glob patterns, default to **/*.md
-  -i, --ignore [pattern]   Ignore patterns, will merge to pattern, default to **/node_modules
-  --exit-level [level]     Process exit level, default to error, other choice is warn and none, it will not exit if setting to none
-  --default-index [index]  Default index in directory, default to README.md,readme.md
-  -h, --help               output usage information
+  -v, --version                       output the version number
+  -f, --fix                           Check and try to fix
+  -c, --cwd [path]                    Working directory of check-md, default to process.cwd()
+  -r, --root [path]                   Checking url root, default to ./
+  -p, --preset [name]                 Preset config(eg vuepress, default)
+  -P, --pattern [pattern]             Glob patterns, default to **/*.md
+  -i, --ignore [pattern]              Ignore patterns, will merge to pattern, default to **/node_modules
+  --ignore-footnotes                  Ignore footnotes, default to false
+  --unique-slug-start-index [number]  Index to start with when making duplicate slugs unique, default to 2
+  --exit-level [level]                Process exit level, default to error, other choice is warn and none, it will not exit if setting to none
+  --default-index [index]             Default index in directory, default to README.md,readme.md
+  -h, --help                          output usage information
 ```
 
 configure in `package.json`
@@ -54,7 +56,7 @@ configure in `package.json`
   "check-md": {
     "cwd": "./",
     "defaultIndex": [ "index.md" ],
-    "exitLevel": "warn",
+    "exitLevel": "warn"
   }
 }
 ```
